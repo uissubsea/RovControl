@@ -5,6 +5,9 @@
 #include "statuswindow.h"
 #include <QMdiSubWindow>
 #include "joystickhandler.h"
+#include "camerahandler.h"
+#include "network.h"
+#include "camerawindow.h"
 
 class MainWindow : public QMainWindow
 {
@@ -29,7 +32,11 @@ private:
 	StatusWindow *statusWindow;
 	QMdiSubWindow *subPod1Window;
 	QMdiSubWindow *subStatusWindow;
-	JoystickHandler *joystickHandler;
+	CameraWindow *camWindow1;
+	CameraWindow *camWindow2;
+	QMdiSubWindow *subCamWindow1;
+	QMdiSubWindow *subCamWindow2;
+	NetClient *netClient;
 
 };
 

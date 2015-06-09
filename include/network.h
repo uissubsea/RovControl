@@ -3,18 +3,38 @@
 
 #include <QTcpSocket>
 #include <QtNetwork>
+#include <QThread>
+#include <QNetworkSession>
+#include <QByteArray>
+#include "joystickhandler.h"
 
-class NetClient : public QObject
+class NetClient : public QThread
 {
 	Q_OBJECT
 	
-public slots:
-	
+public: 
+	NetClient();
+	bool connectToRov(QString, int);
+	void disconnectFromRov();
+	bool sendDataToRov(QString);
+
+private slots:
+	//vuoid sendAxisData(QMap<int, int>);
+	//void sendButtonData(QMap<int, int>);
+	//void sendHatData(QMap<int, int>);
+	void sendAxisData(QByteArray);
 
 private:
 
-	QTcpSocket *tcpSocket;
-	//QtNetworkSession *QtNetworkSession;
+	QTcpSocket *socket;
+	QNetworkSession *QtNetworkSession;
+	JoystickHandler *joystickHandler;
+	bool runThread;
+
+	QString dataToSend;
+
+	void run();
+
 };
 
 #endif
