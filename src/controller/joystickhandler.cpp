@@ -16,6 +16,9 @@ JoystickHandler::JoystickHandler(){
 	openAll();
 	printJoysticks();
 
+	currentThMessage = "0,0,0,0";
+	currentManipMessage = "0,0,0,0,0,0";
+
 }
 /**
  * @brief Thread startpoint
@@ -38,10 +41,16 @@ void JoystickHandler::openAll(){
 		joystickStruct.joystick = SDL_JoystickOpen(idx);
 		joystickStruct.name = QString(SDL_JoystickNameForIndex(idx));
 		joystickStruct.deadzone = 3200;
-		joystickStruct.axisFunctions.insert("x", 0);
-		joystickStruct.axisFunctions.insert("y", 1);
-		joystickStruct.axisFunctions.insert("z", 2);
-		joystickStruct.axisFunctions.insert("rot", 3);
+		joystickStruct.axisFunctions.insert("x", 1);
+		joystickStruct.axisFunctions.insert("y", 2);
+		joystickStruct.axisFunctions.insert("z", 3);
+		joystickStruct.axisFunctions.insert("rot", 0);
+		joystickStruct.range = 1000;
+/*
+		for (int j = 0; j < SDL_JoystickNumAxes(joystickStruct.joystick); j++){
+			joystickStruct.axisValues.insert(j, 0);
+		}
+*/
 		/* This should only be temporary until configuration Function is done */
 		joystickStruct.joystickFunction = THRUSTER_FUNCTION;
 		joysticks.insert(SDL_JoystickInstanceID(joystickStruct.joystick), joystickStruct);
@@ -69,10 +78,18 @@ void JoystickHandler::handleEvents(){
 		switch(event.type)
 		{
 			case SDL_JOYAXISMOTION:
-			if((event.jaxis.value < -joysticks.value(event.jaxis.which).deadzone) || (event.jaxis.value > joysticks.value(event.jaxis.which).deadzone)){
-				
-				joysticks[event.jaxis.which].axisValues[event.jaxis.axis] = event.jaxis.value ;
-
+			if(event.jaxis.value < -joysticks.value(event.jaxis.which).deadzone)
+			{
+				joysticks[event.jaxis.which].axisValues[event.jaxis.axis] = event.jaxis.value + joysticks.value(event.jaxis.which).deadzone;
+				createAxisMessage(event.jaxis.which, joysticks[event.jaxis.which].joystickFunction);
+			}
+			else if (event.jaxis.value > joysticks.value(event.jaxis.which).deadzone)
+			{
+				joysticks[event.jaxis.which].axisValues[event.jaxis.axis] = event.jaxis.value - joysticks.value(event.jaxis.which).deadzone;
+				createAxisMessage(event.jaxis.which, joysticks[event.jaxis.which].joystickFunction);
+			}
+			else{
+				joysticks[event.jaxis.which].axisValues[event.jaxis.axis] = 0;
 				createAxisMessage(event.jaxis.which, joysticks[event.jaxis.which].joystickFunction);
 			}
 			break;
@@ -104,8 +121,8 @@ void JoystickHandler::handleEvents(){
 
 void JoystickHandler::createAxisMessage(int instanceId, int function){
 	QString message;
-	QString tempTh;
-	QString tempManip;
+	QString tempMessage;
+	int factor;
 
 	int axisValue;
 
@@ -113,35 +130,45 @@ void JoystickHandler::createAxisMessage(int instanceId, int function){
 
 	while(i.hasNext()){
 		i.next();
-		if(i.value().joystickFunction == THRUSTER_FUNCTION){
-			QMapIterator<QString, int> iterator(i.value().axisFunctions);
-			while(iterator.hasNext()){
-				iterator.next();
-				tempTh.append(QString::number(i.value().axisValues[iterator.value()]) + ",");
-			}
-			currentThMessage = tempTh;
-		}else{
-		}
-	}
-	
-	/*
-	if (joysticks[instanceId].joystickFunction == THRUSTER_FUNCTION){
-		
-		QMapIterator<QString, int> i(joysticks[instanceId].axisFunctions);
 
-		while(i.hasNext()){
-			i.next();
-			//qDebug() << i.key() << " Value: \t " << i.value();
-			if(joysticks[instanceId].axisValues.contains(i.value())){
-				axisValue = joysticks[instanceId].axisValues[i.value()].value();
-				message.append(QString::number(axisValue + QString(","));
+		/* Determine Factor For joystick */
+		factor = 30000/i.value().range;
+		
+		/*
+		QMapIterator<QString, int> iterator(i.value().axisFunctions);
+		while(iterator.hasNext()){
+			iterator.next();
+			qDebug() << iterator.key();
+			msleep(1000);
+			if(iterator.key() == "y"){
+				tempMessage.append(QString::number(i.value().axisValues[iterator.value()]/factor * -1) + ",");
+			}else
+			{
+				tempMessage.append(QString::number(i.value().axisValues[iterator.value()]/factor) + ",");
 			}
+		*/
+			tempMessage.append(QString::number(i.value().axisValues[0]/factor) + ",");
+			tempMessage.append(QString::number(i.value().axisValues[1]/factor * -1) + ",");
+			tempMessage.append(QString::number(i.value().axisValues[3]/factor) + ",");
+			tempMessage.append(QString::number(i.value().axisValues[2]/factor) + ",");
+
 		}
-		message.append("0,0,0,0,0,0");
-	}
+		
+		if(i.value().joystickFunction == THRUSTER_FUNCTION){
+			currentThMessage = tempMessage;
+		}
+		else
+		{
+			currentManipMessage = tempMessage;
+		}
+	
+
+	message = currentThMessage + currentManipMessage;
+
+	qDebug() << message;
 
 	emit axisValues(message.toUtf8());
-	*/
+
 }
 void JoystickHandler::createButtonMessage(){
 

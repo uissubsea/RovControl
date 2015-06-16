@@ -43,9 +43,11 @@ private:
 		QMap<int, int> ballValues;
 		QMap<int, int> hatValues;
 		QMap<QString, int> axisFunctions;
+		QMap<QString, int>axisMessageMap;
 		int deadzone;
 		int minFactor;	/* Determine max range of stick */
 		int maxFactor;  /* Determine minumum range of stick */
+		int range;
 	};
 
 	QMap<SDL_JoystickID, JoystickStruct> joysticks;

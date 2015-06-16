@@ -36,7 +36,11 @@ private:
 	CameraWindow *camWindow2;
 	QMdiSubWindow *subCamWindow1;
 	QMdiSubWindow *subCamWindow2;
+	
 	NetClient *netClient;
+	JoystickHandler *joystickHandler;
+	CameraHandler *cameraHandler1;
+	CameraHandler *cameraHandler2;
 
 };
 

@@ -19,6 +19,7 @@ public:
 	bool configureCamera();
 	void setCameraIndex(int idx);
 	bool initCamera(int idx);
+	bool initCameraByIp(int ip[]);
 
 signals:
 	void gotCameraImage(QImage);

@@ -18,6 +18,28 @@ void CameraHandler::discoverCameras(){
 
 }
 
+bool CameraHandler::initCameraByIp(int ip[]){
+	for (int idx = 0; idx < 4; idx++){
+		ipAddress.octets[idx] = ip[idx];
+	}
+
+	error = busManager.GetCameraFromIPAddress(ipAddress, &guid);
+
+	if(error != FlyCapture2::PGRERROR_OK){
+		qDebug() << "Could not get camera with IP";
+		return false;
+	}
+
+	error = camera.Connect(&guid);
+	if (error != FlyCapture2::PGRERROR_OK)
+    {
+    	qDebug() << "Unable to connect to camera";
+        return false;
+    }
+
+    return true;
+}
+
 bool CameraHandler::initCamera(int idx = 0){
 	/* Try to get camera */
 	error = busManager.GetCameraFromIndex(idx, &guid);

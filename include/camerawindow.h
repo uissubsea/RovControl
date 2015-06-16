@@ -13,14 +13,12 @@ class CameraWindow : public QWidget
 
 public:
 	CameraWindow(QWidget *parent = 0);
-	void startCamera(int idx);
 
 private slots:
 	void drawPicture(QImage);
 
 private:
 	Ui::CameraWindow ui;
-	CameraHandler *cameraHandler;
 };
 
 #endif

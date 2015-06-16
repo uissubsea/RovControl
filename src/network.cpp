@@ -1,19 +1,15 @@
 #include "network.h"
 
 
-NetClient::NetClient(){
+NetClient::NetClient(QObject *parent){
 	socket = new QTcpSocket(this);
-	runThread = true;
 
-	joystickHandler = new JoystickHandler();
-	joystickHandler->start();
+	connect(socket, SIGNAL(connected()), this, SLOT(connected()));
+	connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
+	connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 
+	send = false;
 
-	/* Connect Joystick signals to send routines */
-
-	//connect(joystickHandler, SIGNAL(axisValues(QMap<int, int>)), this, SLOT(sendAxisData(QMap<int, int>)));
-	//connect(joystickHandler, SIGNAL(buttonValues(QMap<int,int>)), this, SLOT(sendButtonData(QMap<int, int>)));
-	connect(joystickHandler, SIGNAL(axisValues(QByteArray)), this, SLOT(sendAxisData(QByteArray)));
 }
 
 bool NetClient::connectToRov(QString ip = "192.168.1.20", int port = 50000){
@@ -21,48 +17,28 @@ bool NetClient::connectToRov(QString ip = "192.168.1.20", int port = 50000){
 
  	if(socket->waitForConnected(5000)){
  		qDebug() << "Connected to ROV";
+ 		send = true;
  		return true;
  	}
  	else{
  		qDebug() << "Failed to connect";
  		return false;
  	}
-}
-
-
-void NetClient::run(){
-	/* this is the main loop */
-	
-	while(!connectToRov()){
-		qDebug() << "Failed to connect, Trying again";
-	}
-
-	while(runThread){
-		/* Main program loop */
-		/* Get joystick values and print them */
-		//qDebug() << joystickHandler->getJoystickData();
-
-
-
-		
-		msleep(15);
-	}
-
-	socket->disconnectFromHost();
-}
-
-/*
-void NetClient::sendButtonData(QMap<int, int> data){
-	dataToSend = "Btn-";
-	//Iterate over Qmap and append
-	//dataToSend.append(itemtoAppend);
-}
-
-
-void NetClient::sendHatData(QMap<int, int> hatValues){
 
 }
-*/
+
+void NetClient::disconnected(){
+	qDebug() << "Disconnected";
+}
+
+void NetClient::connected(){
+	qDebug() << "Connected to ROV!";
+}
+
+void NetClient::readyRead(){
+	qDebug() << socket->readAll();
+}
+
 void NetClient::sendAxisData(QByteArray arrayToSend){
 	/*
 	QMapIterator<int, int> i(axisValues);
@@ -79,14 +55,14 @@ void NetClient::sendAxisData(QByteArray arrayToSend){
 	//	i.next();
 	//	qDebug() << i.key() << " Value: \t " << i.value();
 	//}
-	socket->write(arrayToSend);
-	socket->readAll();
+
+	//qDebug() << arrayToSend;
+	if (send == true){
+		//socket->write(arrayToSend);
+	}
+	//qDebug() << socket->readAll();
 }
 
 void NetClient::disconnectFromRov(){
-	runThread = false;
-}
-
-bool NetClient::sendDataToRov(QString dataToSend){
-	//socket->write(dataToSend.toUtf8());
+	socket->disconnectFromHost();
 }
