@@ -35,6 +35,9 @@ void MainWindow::on_actionCamera2_triggered(){
 
 	subCamWindow2 = new QMdiSubWindow;
 	camWindow2 = new CameraWindow();
+	int ip[] = {192,168,1,4};
+	cameraHandler2->initCameraByIp(ip);
+	cameraHandler2->start();
 
 	connect(cameraHandler2, SIGNAL(gotCameraImage(QImage)), camWindow2, SLOT(drawPicture(QImage)));
 

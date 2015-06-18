@@ -79,7 +79,7 @@ void CameraHandler::run(){
 
 		//qDebug() << "In image loop";
 
-		rawImage.Convert(FlyCapture2::PIXEL_FORMAT_BGR, &rgbImage);
+		rawImage.Convert(FlyCapture2::PIXEL_FORMAT_RGB8, &rgbImage);
 
 		rowBytes = (double)rgbImage.GetReceivedDataSize()/(double)rgbImage.GetRows();
 
